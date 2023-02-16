@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const authRoute = require('./Backend/Routes/auth')
+const authRoute = require('./Backend/Routes/auth');
+const userRoute = require('./Backend/Routes/user');
 dotenv.config();
 
 app.get('/', (req, res) => {
@@ -22,6 +23,7 @@ app.use(cookieParser());
 
 // Route
 app.use('/v1/auth', authRoute);
+app.use('/v1/user', userRoute);
 
 app.listen(process.env.PORT, (req, res) => {
     console.log('listening on port ' + process.env.PORT);
