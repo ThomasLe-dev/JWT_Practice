@@ -1,5 +1,8 @@
 const bcrypt = require('bcrypt');
 const User = require('../Model/User');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const authController = {
     register: async (req, res) => {
@@ -36,7 +39,12 @@ const authController = {
                 res.status(404).json({message: 'Password is incorrect'});
             }
             if(user && validPassword){
-                res.status(200).json(user);
+                const payload = {
+                    id: user.id,
+                    admin: user.admin
+                }
+                const accessToken = await jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: '3d'});
+                res.status(200).json({user, accessToken});
             }
         }catch(err){
             res.status(500).json({message: err});
