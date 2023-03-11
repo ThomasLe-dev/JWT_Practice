@@ -31,24 +31,38 @@ const authController = {
         try {
             const user = await User.findOne({userName: req.body.userName});
             if(!user){
-                res.status(404).json({message: 'User not found'});
+                return res.status(404).json({message: 'User not found'});
             }
 
             const validPassword = await bcrypt.compare(req.body.password, user.password);
             if(!validPassword){
-                res.status(404).json({message: 'Password is incorrect'});
+                return res.status(404).json({message: 'Password is incorrect'});
             }
             if(user && validPassword){
                 const payload = {
                     id: user.id,
                     admin: user.admin
                 }
-                const accessToken = await jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: '3d'});
+                const accessToken = await jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: '30s'});
+                const refreshToken = await jwt.sign(payload, process.env.JWT_REFRESH_KEY, {expiresIn: '30d'});
+
+                res.cookie("refreshToken", refreshToken, {
+                    httpOnly: true,
+                    secure: false,
+                    path: "/",
+                    sameSite: 'strict'
+                })
                 res.status(200).json({user, accessToken});
             }
         }catch(err){
             res.status(500).json({message: err});
         }
+    },
+
+    requestRefreshToken: async(req, res) => {
+        //take the refresh token from cookie
+        const refreshToken = req.cookies.refreshToken;
+        res.status(200).json(refreshToken);
     }
 }
 
